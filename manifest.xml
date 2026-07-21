@@ -13,7 +13,7 @@
   <DisplayName DefaultValue="Cell History"/>
   <Description DefaultValue="Tracks your recent cell locations and lets you jump back to where you were."/>
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png"/>
-  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-80.png"/>
+  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
   <SupportUrl DefaultValue="https://localhost:3000/src/taskpane/taskpane.html"/>
 
   <AppDomains>

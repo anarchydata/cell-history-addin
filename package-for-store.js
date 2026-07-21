@@ -44,6 +44,7 @@ const copies = [
   ["src/privacy.html", "privacy.html"],
   ["assets/icon-16.png", "assets/icon-16.png"],
   ["assets/icon-32.png", "assets/icon-32.png"],
+  ["assets/icon-64.png", "assets/icon-64.png"],
   ["assets/icon-80.png", "assets/icon-80.png"]
 ];
 
@@ -62,6 +63,12 @@ for (const [from, to] of copies) {
 // --- Production manifest: swap localhost for the production URL. ---
 let manifest = fs.readFileSync(path.join(ROOT, "manifest.xml"), "utf8");
 manifest = manifest.split("https://localhost:3000").join(baseUrl);
+// AppDomains must be bare origins (no path), per store validation.
+const origin = new URL(baseUrl).origin;
+manifest = manifest.replace(
+  /<AppDomain>[^<]*<\/AppDomain>/,
+  `<AppDomain>${origin}</AppDomain>`
+);
 manifest = manifest.replace(
   /<SupportUrl DefaultValue="[^"]*"\/>/,
   `<SupportUrl DefaultValue="${baseUrl}/support.html"/>`

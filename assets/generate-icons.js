@@ -91,6 +91,6 @@ function render(size) {
   return px;
 }
 
-for (const size of [16, 32, 80]) {
+for (const size of [16, 32, 64, 80]) {
   writePng(size, render(size), path.join(__dirname, `icon-${size}.png`));
 }
