@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cell History</title>
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <link rel="stylesheet" href="taskpane.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="header-top">
+      <h1 class="title">Cell History</h1>
+      <button id="clear-btn" class="ghost-btn" title="Clear history">Clear</button>
+    </div>
+    <div class="nav-row">
+      <button id="back-btn" class="nav-btn" disabled title="Go to previous location">
+        <span class="arrow">&#8592;</span> Back
+      </button>
+      <button id="forward-btn" class="nav-btn" disabled title="Go to next location">
+        Forward <span class="arrow">&#8594;</span>
+      </button>
+    </div>
+    <div class="settings-row">
+      <label for="dwell-input">Record after staying</label>
+      <input id="dwell-input" type="number" min="1" max="60" step="1" value="5"/>
+      <span>seconds</span>
+    </div>
+    <div id="pending-indicator" class="pending hidden">
+      <span class="pending-dot"></span>
+      <span id="pending-text"></span>
+    </div>
+  </header>
+
+  <main>
+    <div id="empty-state" class="empty-state">
+      <p>No locations recorded yet.</p>
+      <p class="hint">Stay on a cell for 5 seconds and it will appear here. Click any entry to jump back to it.</p>
+    </div>
+    <ul id="history-list" class="history-list"></ul>
+  </main>
+
+  <footer class="footer">
+    <span id="status-text">Starting&hellip;</span>
+  </footer>
+
+  <script src="taskpane.js"></script>
+</body>
+</html>
