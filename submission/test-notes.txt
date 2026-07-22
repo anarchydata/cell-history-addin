@@ -1,0 +1,22 @@
+NOTES FOR CERTIFICATION — Cell History
+
+No account, login, or external service is required. The add-in works entirely inside Excel.
+
+TEST STEPS
+1. Open Excel (Windows desktop or Excel on the web).
+2. Install / open the Cell History add-in.
+3. On the Home tab, open the Cell History group and click Show History to open the task pane.
+4. Click cell A1 and wait about 5 seconds. Confirm an entry appears in the history list (or the countdown completes and records it).
+5. Click cell D10 (or another distant cell) and wait about 5 seconds so a second location is recorded.
+6. Click Back on the ribbon (or Back in the pane). Confirm the selection returns to the previous location.
+7. Click Forward in the pane. Confirm it moves forward again.
+8. Click an older entry in the history list. Confirm Excel jumps to that sheet and address.
+9. Optionally change the dwell seconds field, Clear history, then save and reopen the workbook to confirm history persistence after save.
+
+EXPECTED RESULTS
+- Locations are only recorded after the dwell time.
+- Back / Forward and list clicks navigate correctly across sheets when applicable.
+- No crashes; no external network calls required for core functionality.
+
+SAMPLE DATA
+None required. Any blank workbook is fine.

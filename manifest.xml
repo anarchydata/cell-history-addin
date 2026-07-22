@@ -7,13 +7,13 @@
   xsi:type="TaskPaneApp">
 
   <Id>8ec4ea57-eccf-43ca-b01f-8d1f3a9f6716</Id>
-  <Version>1.0.0.0</Version>
-  <ProviderName>JGold</ProviderName>
+  <Version>1.0.6.0</Version>
+  <ProviderName>Goldmeier Consulting Co LLC</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="Cell History"/>
   <Description DefaultValue="Tracks your recent cell locations and lets you jump back to where you were."/>
-  <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png"/>
-  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
+  <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png?v=7"/>
+  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-64.png?v=7"/>
   <SupportUrl DefaultValue="https://localhost:3000/src/taskpane/taskpane.html"/>
 
   <AppDomains>
@@ -37,6 +37,12 @@
   <Permissions>ReadWriteDocument</Permissions>
 
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
+    <Requirements>
+      <bt:Sets DefaultMinVersion="1.1">
+        <bt:Set Name="RibbonApi" MinVersion="1.1"/>
+        <bt:Set Name="SharedRuntime" MinVersion="1.1"/>
+      </bt:Sets>
+    </Requirements>
     <Hosts>
       <Host xsi:type="Workbook">
         <Runtimes>
@@ -54,9 +60,9 @@
               <Group id="CellHistory.Group">
                 <Label resid="Group.Label"/>
                 <Icon>
-                  <bt:Image size="16" resid="Icon.16"/>
-                  <bt:Image size="32" resid="Icon.32"/>
-                  <bt:Image size="80" resid="Icon.80"/>
+                  <bt:Image size="16" resid="IconHistory.16"/>
+                  <bt:Image size="32" resid="IconHistory.32"/>
+                  <bt:Image size="80" resid="IconHistory.80"/>
                 </Icon>
                 <Control xsi:type="Button" id="CellHistory.BackButton">
                   <Label resid="Back.Label"/>
@@ -65,13 +71,30 @@
                     <Description resid="Back.Tooltip"/>
                   </Supertip>
                   <Icon>
-                    <bt:Image size="16" resid="Icon.16"/>
-                    <bt:Image size="32" resid="Icon.32"/>
-                    <bt:Image size="80" resid="Icon.80"/>
+                    <bt:Image size="16" resid="IconBack.16"/>
+                    <bt:Image size="32" resid="IconBack.32"/>
+                    <bt:Image size="80" resid="IconBack.80"/>
                   </Icon>
                   <Action xsi:type="ExecuteFunction">
                     <FunctionName>ribbonGoBack</FunctionName>
                   </Action>
+                  <Enabled>false</Enabled>
+                </Control>
+                <Control xsi:type="Button" id="CellHistory.ForwardButton">
+                  <Label resid="Forward.Label"/>
+                  <Supertip>
+                    <Title resid="Forward.Label"/>
+                    <Description resid="Forward.Tooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="IconForward.16"/>
+                    <bt:Image size="32" resid="IconForward.32"/>
+                    <bt:Image size="80" resid="IconForward.80"/>
+                  </Icon>
+                  <Action xsi:type="ExecuteFunction">
+                    <FunctionName>ribbonGoForward</FunctionName>
+                  </Action>
+                  <Enabled>false</Enabled>
                 </Control>
                 <Control xsi:type="Button" id="CellHistory.TaskpaneButton">
                   <Label resid="Pane.Label"/>
@@ -80,9 +103,9 @@
                     <Description resid="Pane.Tooltip"/>
                   </Supertip>
                   <Icon>
-                    <bt:Image size="16" resid="Icon.16"/>
-                    <bt:Image size="32" resid="Icon.32"/>
-                    <bt:Image size="80" resid="Icon.80"/>
+                    <bt:Image size="16" resid="IconHistory.16"/>
+                    <bt:Image size="32" resid="IconHistory.32"/>
+                    <bt:Image size="80" resid="IconHistory.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
                     <TaskpaneId>CellHistoryPane</TaskpaneId>
@@ -97,9 +120,15 @@
     </Hosts>
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16" DefaultValue="https://localhost:3000/assets/icon-16.png"/>
-        <bt:Image id="Icon.32" DefaultValue="https://localhost:3000/assets/icon-32.png"/>
-        <bt:Image id="Icon.80" DefaultValue="https://localhost:3000/assets/icon-80.png"/>
+        <bt:Image id="IconBack.16" DefaultValue="https://localhost:3000/assets/icon-back-16.png?v=7"/>
+        <bt:Image id="IconBack.32" DefaultValue="https://localhost:3000/assets/icon-back-32.png?v=7"/>
+        <bt:Image id="IconBack.80" DefaultValue="https://localhost:3000/assets/icon-back-80.png?v=7"/>
+        <bt:Image id="IconForward.16" DefaultValue="https://localhost:3000/assets/icon-forward-16.png?v=7"/>
+        <bt:Image id="IconForward.32" DefaultValue="https://localhost:3000/assets/icon-forward-32.png?v=7"/>
+        <bt:Image id="IconForward.80" DefaultValue="https://localhost:3000/assets/icon-forward-80.png?v=7"/>
+        <bt:Image id="IconHistory.16" DefaultValue="https://localhost:3000/assets/icon-history-16.png?v=7"/>
+        <bt:Image id="IconHistory.32" DefaultValue="https://localhost:3000/assets/icon-history-32.png?v=7"/>
+        <bt:Image id="IconHistory.80" DefaultValue="https://localhost:3000/assets/icon-history-80.png?v=7"/>
       </bt:Images>
       <bt:Urls>
         <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3000/src/taskpane/taskpane.html"/>
@@ -107,13 +136,15 @@
       <bt:ShortStrings>
         <bt:String id="Group.Label" DefaultValue="Cell History"/>
         <bt:String id="Back.Label" DefaultValue="Back"/>
-        <bt:String id="Pane.Label" DefaultValue="Show History"/>
+        <bt:String id="Forward.Label" DefaultValue="Forward"/>
+        <bt:String id="Pane.Label" DefaultValue="History"/>
         <bt:String id="GetStarted.Title" DefaultValue="Cell History loaded"/>
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="Back.Tooltip" DefaultValue="Jump back to your previous cell location."/>
+        <bt:String id="Back.Tooltip" DefaultValue="Jump back to the previous cell location."/>
+        <bt:String id="Forward.Tooltip" DefaultValue="Jump forward to the next cell location."/>
         <bt:String id="Pane.Tooltip" DefaultValue="Open the pane that tracks your recent cell locations."/>
-        <bt:String id="GetStarted.Description" DefaultValue="Use the Back button on the Home tab to return to your previous cell, or open Show History to see recent locations."/>
+        <bt:String id="GetStarted.Description" DefaultValue="Use Back and Forward to navigate recent cells, or open History for the full list."/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>

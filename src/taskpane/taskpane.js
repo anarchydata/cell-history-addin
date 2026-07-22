@@ -13,16 +13,20 @@
   /** Selection we're waiting on before committing it to history. */
   var pending = null;
   var dwellTimer = null;
-  var countdownTimer = null;
-  var dwellSeconds = 5;
+  var dwellSeconds = 0.1;
 
-  /** Set while we navigate programmatically, so that selection event doesn't restart the dwell flow. */
-  var suppressNextEvent = false;
+  /**
+   * While Date.now() < suppressUntil, ignore selection/activation events.
+   * activate()+select() can fire multiple events; a one-shot boolean is not enough.
+   */
+  var suppressUntil = 0;
 
   var ui = {};
 
   var SETTINGS_KEY = "cellHistoryState";
   var saveTimer = null;
+  var hoverTimer = null;
+  var hoverRequestId = 0;
 
   // ---------------------------------------------------------------------------
   // Startup
@@ -33,10 +37,15 @@
       return;
     }
 
-    // Ribbon "Back" button (ExecuteFunction on the shared runtime).
+    // Ribbon Back / Forward (one step each).
     if (Office.actions && Office.actions.associate) {
       Office.actions.associate("ribbonGoBack", function (event) {
         goBack().finally(function () {
+          event.completed();
+        });
+      });
+      Office.actions.associate("ribbonGoForward", function (event) {
+        goForward().finally(function () {
           event.completed();
         });
       });
@@ -63,16 +72,14 @@
     ui.dwellInput = document.getElementById("dwell-input");
     ui.list = document.getElementById("history-list");
     ui.emptyState = document.getElementById("empty-state");
-    ui.pendingBox = document.getElementById("pending-indicator");
-    ui.pendingText = document.getElementById("pending-text");
     ui.statusText = document.getElementById("status-text");
 
     ui.backBtn.addEventListener("click", function () { goBack(); });
     ui.forwardBtn.addEventListener("click", function () { goForward(); });
     ui.clearBtn.addEventListener("click", clearHistory);
     ui.dwellInput.addEventListener("change", function () {
-      var v = parseInt(ui.dwellInput.value, 10);
-      if (isNaN(v) || v < 1) { v = 1; }
+      var v = parseFloat(ui.dwellInput.value);
+      if (isNaN(v) || v < 0.1) { v = 0.1; }
       if (v > 60) { v = 60; }
       dwellSeconds = v;
       ui.dwellInput.value = String(v);
@@ -92,7 +99,7 @@
         pointer = typeof saved.pointer === "number" ? saved.pointer : entries.length - 1;
         if (pointer >= entries.length) { pointer = entries.length - 1; }
         if (typeof saved.dwellSeconds === "number") {
-          dwellSeconds = saved.dwellSeconds;
+          dwellSeconds = Math.max(0.1, Math.min(60, saved.dwellSeconds));
           ui.dwellInput.value = String(dwellSeconds);
         }
         renderList();
@@ -150,16 +157,41 @@
     }).catch(function () { /* no active cell (e.g. chart selected) */ });
   }
 
+  function beginSuppressSelection() {
+    // Hold through the Excel sync; endSuppressSelection extends a short grace period.
+    suppressUntil = Date.now() + 10000;
+  }
+
+  function endSuppressSelection() {
+    suppressUntil = Date.now() + 200;
+  }
+
+  function normalizeAddress(address) {
+    if (!address) { return ""; }
+    var raw = String(address).split("!").pop().replace(/\$/g, "").toUpperCase();
+    return raw.split(",").map(function (part) {
+      var p = part.trim();
+      var ends = p.split(":");
+      if (ends.length === 2 && ends[0] === ends[1]) { return ends[0]; }
+      return p;
+    }).join(",");
+  }
+
+  function sameLocation(a, sheetId, address) {
+    return a && a.sheetId === sheetId && normalizeAddress(a.address) === normalizeAddress(address);
+  }
+
   function handleSelection(worksheetId, address) {
-    if (suppressNextEvent) {
-      suppressNextEvent = false;
+    if (Date.now() < suppressUntil) {
       cancelPending();
       return Promise.resolve();
     }
 
+    address = normalizeAddress(address);
+
     // Same place as the current entry: refresh its timestamp, don't start a new dwell.
     var current = pointer >= 0 ? entries[pointer] : null;
-    if (current && current.sheetId === worksheetId && current.address === address) {
+    if (sameLocation(current, worksheetId, address)) {
       current.lastVisit = Date.now();
       cancelPending();
       renderList();
@@ -167,24 +199,20 @@
     }
 
     // Same as the already-pending candidate: keep the existing timer running.
-    if (pending && pending.sheetId === worksheetId && pending.address === address) {
+    if (pending && sameLocation(pending, worksheetId, address)) {
       return Promise.resolve();
     }
 
-    // New candidate: (re)start the dwell countdown.
+    // New candidate: (re)start the dwell timer silently.
     cancelPending();
     pending = { sheetId: worksheetId, address: address, since: Date.now() };
     dwellTimer = setTimeout(commitPending, dwellSeconds * 1000);
-    countdownTimer = setInterval(updatePendingIndicator, 250);
-    updatePendingIndicator();
     return Promise.resolve();
   }
 
   function cancelPending() {
     if (dwellTimer) { clearTimeout(dwellTimer); dwellTimer = null; }
-    if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
     pending = null;
-    ui.pendingBox.classList.add("hidden");
   }
 
   function commitPending() {
@@ -206,12 +234,17 @@
 
   function recordEntry(sheetId, sheetName, address) {
     var now = Date.now();
+    address = normalizeAddress(address);
     var current = pointer >= 0 ? entries[pointer] : null;
 
-    if (current && current.sheetId === sheetId && current.address === address) {
+    if (sameLocation(current, sheetId, address)) {
       current.lastVisit = now;
       current.visits += 1;
     } else {
+      // Drop any "forward" entries when branching from mid-history (browser-style).
+      if (pointer >= 0 && pointer < entries.length - 1) {
+        entries = entries.slice(0, pointer + 1);
+      }
       entries.push({
         sheetId: sheetId,
         sheetName: sheetName,
@@ -234,15 +267,31 @@
   // ---------------------------------------------------------------------------
 
   function goBack() {
-    if (pointer <= 0) { return Promise.resolve(); }
-    pointer -= 1;
-    return navigateTo(entries[pointer]);
+    return goBackBy(1);
   }
 
   function goForward() {
-    if (pointer < 0 || pointer >= entries.length - 1) { return Promise.resolve(); }
-    pointer += 1;
-    return navigateTo(entries[pointer]);
+    return goForwardBy(1);
+  }
+
+  function goBackBy(steps) {
+    if (steps < 1 || pointer < steps) { return Promise.resolve(); }
+    var target = entries[pointer - steps];
+    pointer -= steps;
+    return navigateTo(target);
+  }
+
+  function goForwardBy(steps) {
+    if (steps < 1 || pointer < 0 || pointer + steps >= entries.length) {
+      return Promise.resolve();
+    }
+    var target = entries[pointer + steps];
+    pointer += steps;
+    return navigateTo(target);
+  }
+
+  function formatEntry(entry) {
+    return entry.sheetName + "!" + entry.address;
   }
 
   function jumpTo(index) {
@@ -253,7 +302,7 @@
 
   function navigateTo(entry) {
     cancelPending();
-    suppressNextEvent = true;
+    beginSuppressSelection();
     return Excel.run(function (context) {
       // Prefer the sheet ID; fall back to the name for restored entries whose ID went stale.
       var sheet = context.workbook.worksheets.getItemOrNullObject(entry.sheetId);
@@ -274,8 +323,9 @@
       renderList();
       persistState();
     }).catch(function (err) {
-      suppressNextEvent = false;
       setStatus("Could not navigate (sheet may have been deleted): " + err.message);
+    }).then(function () {
+      endSuppressSelection();
     });
   }
 
@@ -293,8 +343,10 @@
   // ---------------------------------------------------------------------------
 
   function renderList() {
-    ui.backBtn.disabled = pointer <= 0;
-    ui.forwardBtn.disabled = pointer < 0 || pointer >= entries.length - 1;
+    var canBack = pointer > 0;
+    var canForward = pointer >= 0 && pointer < entries.length - 1;
+    ui.backBtn.disabled = !canBack;
+    ui.forwardBtn.disabled = !canForward;
     ui.emptyState.classList.toggle("hidden", entries.length > 0);
     ui.list.innerHTML = "";
 
@@ -302,12 +354,39 @@
     for (var i = entries.length - 1; i >= 0; i--) {
       ui.list.appendChild(buildItem(entries[i], i));
     }
+    updateRibbonButtons(canBack, canForward);
+  }
+
+  function updateRibbonButtons(canBack, canForward) {
+    if (!Office.ribbon || !Office.ribbon.requestUpdate) { return; }
+    try {
+      Office.ribbon.requestUpdate({
+        tabs: [{
+          id: "TabHome",
+          groups: [{
+            id: "CellHistory.Group",
+            controls: [
+              { id: "CellHistory.BackButton", enabled: !!canBack },
+              { id: "CellHistory.ForwardButton", enabled: !!canForward }
+            ]
+          }]
+        }]
+      });
+    } catch (e) {
+      // Host may not support RibbonApi.
+    }
   }
 
   function buildItem(entry, index) {
     var li = document.createElement("li");
     li.className = "history-item" + (index === pointer ? " current" : "");
-    li.title = "Jump to " + entry.sheetName + "!" + entry.address;
+    var jumpLabel =
+      index < pointer
+        ? "Jump back to " + entry.sheetName + "!" + entry.address
+        : index > pointer
+          ? "Jump forward to " + entry.sheetName + "!" + entry.address
+          : "Current: " + entry.sheetName + "!" + entry.address;
+    li.title = jumpLabel;
 
     var loc = document.createElement("div");
     loc.className = "item-location";
@@ -321,14 +400,51 @@
     li.appendChild(loc);
     li.appendChild(meta);
     li.addEventListener("click", function () { jumpTo(index); });
+    li.addEventListener("mouseenter", function () {
+      previewEntry(entry);
+    });
+    li.addEventListener("mouseleave", function () {
+      restoreCurrentSelection();
+    });
     return li;
   }
 
-  function updatePendingIndicator() {
-    if (!pending) { return; }
-    var remaining = Math.max(0, dwellSeconds - (Date.now() - pending.since) / 1000);
-    ui.pendingText.textContent = "Recording " + pending.address + " in " + remaining.toFixed(1) + "s\u2026";
-    ui.pendingBox.classList.remove("hidden");
+  /** Hover preview: select the cell without changing history. */
+  function previewEntry(entry) {
+    if (hoverTimer) { clearTimeout(hoverTimer); }
+    var req = ++hoverRequestId;
+    hoverTimer = setTimeout(function () {
+      selectOnly(entry, req);
+    }, 80);
+  }
+
+  function restoreCurrentSelection() {
+    if (hoverTimer) { clearTimeout(hoverTimer); hoverTimer = null; }
+    var req = ++hoverRequestId;
+    if (pointer < 0 || !entries[pointer]) { return; }
+    selectOnly(entries[pointer], req);
+  }
+
+  function selectOnly(entry, req) {
+    beginSuppressSelection();
+    return Excel.run(function (context) {
+      var sheet = context.workbook.worksheets.getItemOrNullObject(entry.sheetId);
+      return context.sync().then(function () {
+        if (req !== hoverRequestId) { return; }
+        if (sheet.isNullObject) {
+          sheet = context.workbook.worksheets.getItem(entry.sheetName);
+        }
+        sheet.activate();
+        var target = entry.address.indexOf(",") >= 0
+          ? sheet.getRanges(entry.address)
+          : sheet.getRange(entry.address);
+        target.select();
+        return context.sync();
+      });
+    }).catch(function () { /* hover preview is best-effort */ })
+      .then(function () {
+        endSuppressSelection();
+      });
   }
 
   function timeAgo(ts) {

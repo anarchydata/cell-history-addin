@@ -45,7 +45,19 @@ const copies = [
   ["assets/icon-16.png", "assets/icon-16.png"],
   ["assets/icon-32.png", "assets/icon-32.png"],
   ["assets/icon-64.png", "assets/icon-64.png"],
-  ["assets/icon-80.png", "assets/icon-80.png"]
+  ["assets/icon-80.png", "assets/icon-80.png"],
+  ["assets/icon-back-16.png", "assets/icon-back-16.png"],
+  ["assets/icon-back-32.png", "assets/icon-back-32.png"],
+  ["assets/icon-back-64.png", "assets/icon-back-64.png"],
+  ["assets/icon-back-80.png", "assets/icon-back-80.png"],
+  ["assets/icon-forward-16.png", "assets/icon-forward-16.png"],
+  ["assets/icon-forward-32.png", "assets/icon-forward-32.png"],
+  ["assets/icon-forward-64.png", "assets/icon-forward-64.png"],
+  ["assets/icon-forward-80.png", "assets/icon-forward-80.png"],
+  ["assets/icon-history-16.png", "assets/icon-history-16.png"],
+  ["assets/icon-history-32.png", "assets/icon-history-32.png"],
+  ["assets/icon-history-64.png", "assets/icon-history-64.png"],
+  ["assets/icon-history-80.png", "assets/icon-history-80.png"]
 ];
 
 for (const [from, to] of copies) {

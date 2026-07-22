@@ -1,0 +1,28 @@
+APP NAME
+Cell History
+
+SHORT DESCRIPTION (≤100 characters recommended for store cards)
+Jump back to previous Excel cells. History pane with a 5-second dwell timer.
+
+LONG DESCRIPTION
+Cell History remembers where you’ve been in a workbook and lets you return with one click.
+
+• Back and Forward navigation — jump to previous cell locations, including across sheets
+• History pane — see recent locations; click any entry to go there
+• Smart 5-second dwell timer — rapid clicking doesn’t flood history; staying put records a location; revisiting the current spot updates its time instead of duplicating it
+• Configurable dwell (1–60 seconds)
+• History saved in the workbook — restored when you reopen the file
+
+Privacy: Cell History does not send workbook data or cell locations to any server. History is stored only inside your workbook using Office document settings.
+
+Support: https://anarchydata.github.io/cell-history-addin/support.html
+Privacy: https://anarchydata.github.io/cell-history-addin/privacy.html
+
+CATEGORY
+Productivity / Excel
+
+PUBLISHER
+Goldmeier Consulting Co LLC
+
+SUPPORT EMAIL
+jordan@anarchydata.com

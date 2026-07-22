@@ -23,19 +23,15 @@
     </div>
     <div class="settings-row">
       <label for="dwell-input">Record after staying</label>
-      <input id="dwell-input" type="number" min="1" max="60" step="1" value="5"/>
+      <input id="dwell-input" type="number" min="0.1" max="60" step="any" value="0.1"/>
       <span>seconds</span>
-    </div>
-    <div id="pending-indicator" class="pending hidden">
-      <span class="pending-dot"></span>
-      <span id="pending-text"></span>
     </div>
   </header>
 
   <main>
     <div id="empty-state" class="empty-state">
       <p>No locations recorded yet.</p>
-      <p class="hint">Stay on a cell for 5 seconds and it will appear here. Click any entry to jump back to it.</p>
+      <p class="hint">Stay on a cell for the set time and it will appear here. Click any entry to jump back to it.</p>
     </div>
     <ul id="history-list" class="history-list"></ul>
   </main>

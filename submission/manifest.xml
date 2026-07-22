@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<OfficeApp
+  xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+  xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
+  xsi:type="TaskPaneApp">
+
+  <Id>8ec4ea57-eccf-43ca-b01f-8d1f3a9f6716</Id>
+  <Version>1.0.0.0</Version>
+  <ProviderName>Goldmeier Consulting Co LLC</ProviderName>
+  <DefaultLocale>en-US</DefaultLocale>
+  <DisplayName DefaultValue="Cell History"/>
+  <Description DefaultValue="Tracks your recent cell locations and lets you jump back to where you were."/>
+  <IconUrl DefaultValue="https://anarchydata.github.io/cell-history-addin/assets/icon-32.png"/>
+  <HighResolutionIconUrl DefaultValue="https://anarchydata.github.io/cell-history-addin/assets/icon-64.png"/>
+  <SupportUrl DefaultValue="https://anarchydata.github.io/cell-history-addin/support.html"/>
+
+  <AppDomains>
+    <AppDomain>https://anarchydata.github.io</AppDomain>
+  </AppDomains>
+
+  <Hosts>
+    <Host Name="Workbook"/>
+  </Hosts>
+
+  <Requirements>
+    <Sets DefaultMinVersion="1.1">
+      <Set Name="SharedRuntime" MinVersion="1.1"/>
+    </Sets>
+  </Requirements>
+
+  <DefaultSettings>
+    <SourceLocation DefaultValue="https://anarchydata.github.io/cell-history-addin/src/taskpane/taskpane.html"/>
+  </DefaultSettings>
+
+  <Permissions>ReadWriteDocument</Permissions>
+
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
+    <Hosts>
+      <Host xsi:type="Workbook">
+        <Runtimes>
+          <Runtime resid="Taskpane.Url" lifetime="long"/>
+        </Runtimes>
+        <DesktopFormFactor>
+          <GetStarted>
+            <Title resid="GetStarted.Title"/>
+            <Description resid="GetStarted.Description"/>
+            <LearnMoreUrl resid="Taskpane.Url"/>
+          </GetStarted>
+          <FunctionFile resid="Taskpane.Url"/>
+          <ExtensionPoint xsi:type="PrimaryCommandSurface">
+            <OfficeTab id="TabHome">
+              <Group id="CellHistory.Group">
+                <Label resid="Group.Label"/>
+                <Icon>
+                  <bt:Image size="16" resid="Icon.16"/>
+                  <bt:Image size="32" resid="Icon.32"/>
+                  <bt:Image size="80" resid="Icon.80"/>
+                </Icon>
+                <Control xsi:type="Button" id="CellHistory.BackButton">
+                  <Label resid="Back.Label"/>
+                  <Supertip>
+                    <Title resid="Back.Label"/>
+                    <Description resid="Back.Tooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16"/>
+                    <bt:Image size="32" resid="Icon.32"/>
+                    <bt:Image size="80" resid="Icon.80"/>
+                  </Icon>
+                  <Action xsi:type="ExecuteFunction">
+                    <FunctionName>ribbonGoBack</FunctionName>
+                  </Action>
+                </Control>
+                <Control xsi:type="Button" id="CellHistory.TaskpaneButton">
+                  <Label resid="Pane.Label"/>
+                  <Supertip>
+                    <Title resid="Pane.Label"/>
+                    <Description resid="Pane.Tooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16"/>
+                    <bt:Image size="32" resid="Icon.32"/>
+                    <bt:Image size="80" resid="Icon.80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>CellHistoryPane</TaskpaneId>
+                    <SourceLocation resid="Taskpane.Url"/>
+                  </Action>
+                </Control>
+              </Group>
+            </OfficeTab>
+          </ExtensionPoint>
+        </DesktopFormFactor>
+      </Host>
+    </Hosts>
+    <Resources>
+      <bt:Images>
+        <bt:Image id="Icon.16" DefaultValue="https://anarchydata.github.io/cell-history-addin/assets/icon-16.png"/>
+        <bt:Image id="Icon.32" DefaultValue="https://anarchydata.github.io/cell-history-addin/assets/icon-32.png"/>
+        <bt:Image id="Icon.80" DefaultValue="https://anarchydata.github.io/cell-history-addin/assets/icon-80.png"/>
+      </bt:Images>
+      <bt:Urls>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://anarchydata.github.io/cell-history-addin/src/taskpane/taskpane.html"/>
+      </bt:Urls>
+      <bt:ShortStrings>
+        <bt:String id="Group.Label" DefaultValue="Cell History"/>
+        <bt:String id="Back.Label" DefaultValue="Back"/>
+        <bt:String id="Pane.Label" DefaultValue="Show History"/>
+        <bt:String id="GetStarted.Title" DefaultValue="Cell History loaded"/>
+      </bt:ShortStrings>
+      <bt:LongStrings>
+        <bt:String id="Back.Tooltip" DefaultValue="Jump back to your previous cell location."/>
+        <bt:String id="Pane.Tooltip" DefaultValue="Open the pane that tracks your recent cell locations."/>
+        <bt:String id="GetStarted.Description" DefaultValue="Use the Back button on the Home tab to return to your previous cell, or open Show History to see recent locations."/>
+      </bt:LongStrings>
+    </Resources>
+  </VersionOverrides>
+</OfficeApp>
